@@ -1,0 +1,174 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Scanner;
+import javax.swing.JOptionPane;
+
+/**
+ * @author Johnny Darling
+ */
+public class MedicalOffice {
+    private String practiceName;
+    private ArrayList<Patient> patients;
+    private ArrayList<String> physicians;
+
+    public MedicalOffice() {
+        this.practiceName = "";
+        this.patients = new ArrayList<Patient>();
+        this.physicians = new ArrayList<String>();
+    }
+
+    public MedicalOffice(String practiceName) {
+        this.practiceName = practiceName;
+        this.patients = new ArrayList<Patient>();
+        this.physicians = new ArrayList<String>();
+    }
+
+    public void readMedicalOfficeData(String infileName) throws FileNotFoundException {
+        File file = new File(infileName);
+        Scanner sc = new Scanner(file);
+
+        if (sc.hasNextLine()) {
+            this.practiceName = sc.nextLine().trim();
+        }
+
+        if (sc.hasNextLine()) {
+            int numPhys = Integer.parseInt(sc.nextLine().trim());
+            for (int i = 0; i < numPhys; i++) {
+                if (sc.hasNextLine()) addPhysician(sc.nextLine().trim());
+            }
+        }
+
+        if (sc.hasNextLine()) {
+            int numPats = Integer.parseInt(sc.nextLine().trim());
+            for (int i = 0; i < numPats; i++) {
+                // Fix: Only add the patient if it isn't null
+                Patient temp = readPatient(sc);
+                if (temp != null) {
+                    addPatient(temp);
+                }
+            }
+        }
+        sc.close();
+    }
+
+    private Patient readPatient(Scanner sc) {
+        Patient p = null;
+        if (sc.hasNextLine()) {
+            int id = Integer.parseInt(sc.nextLine().trim());
+            String fName = sc.nextLine().trim();
+            String lName = sc.nextLine().trim();
+            char gen = sc.nextLine().trim().charAt(0);
+            String dob = sc.nextLine().trim();
+            String phys = sc.nextLine().trim();
+
+            p = new Patient(id, fName, lName, gen, dob, phys);
+
+            if (sc.hasNextLine()) {
+                int numAppts = Integer.parseInt(sc.nextLine().trim());
+                for (int i = 0; i < numAppts; i++) {
+                    if (sc.hasNextLine()) sc.nextLine(); // Skips "Appt for Patient"
+                    
+                    if (sc.hasNextLine()) {
+                        String line = sc.nextLine();
+                        String[] parts = line.split("\\*", -1);
+                        if (parts.length >= 10) {
+                            Appointment a = new Appointment(
+                                Integer.parseInt(parts[0].trim()), parts[1].trim(), parts[2].trim(),
+                                Double.parseDouble(parts[3].trim()), Double.parseDouble(parts[4].trim()),
+                                Double.parseDouble(parts[5].trim()), Integer.parseInt(parts[6].trim()),
+                                Integer.parseInt(parts[7].trim()), Integer.parseInt(parts[8].trim()),
+                                parts[9].trim()
+                            );
+                            p.addAppointment(a);
+                        }
+                    }
+                }
+            }
+        }
+        return p;
+    }
+
+    public void saveMedicalOfficeData(String outfileName) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(new File(outfileName));
+        writer.print(this.toString());
+        writer.close();
+    }
+
+    public void displayAppointment(int patientID, String apptDate) {
+        for (int i = 0; i < getPatientSize(); i++) {
+            Patient p = getPatient(i);
+            if (p != null && p.getPatientID() == patientID) {
+                for (int j = 0; j < p.getAppointmentSize(); j++) {
+                    Appointment a = p.getAppointment(j);
+                    if (a.getApptDate().equals(apptDate)) {
+                        JOptionPane.showMessageDialog(null, a.toString().replace("*", "\n"));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    public void sortData() {
+        sortPhysicians();
+        sortPatients();
+    }
+
+    private void sortPhysicians() {
+        java.util.Collections.sort(physicians);
+    }
+
+    private void sortPatients() {
+        for (int i = 0; i < patients.size() - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < patients.size(); j++) {
+                String nameJ = patients.get(j).getLastName() + patients.get(j).getFirstName();
+                String nameMin = patients.get(minIdx).getLastName() + patients.get(minIdx).getFirstName();
+                if (nameJ.compareToIgnoreCase(nameMin) < 0) minIdx = j;
+            }
+            Patient temp = patients.get(minIdx);
+            patients.set(minIdx, patients.get(i));
+            patients.set(i, temp);
+        }
+    }
+
+    public int getPhysicianSize() { return physicians.size(); }
+    public String getPhysician(int index) { return physicians.get(index); }
+    public void addPhysician(String item) { physicians.add(item); }
+    public int getPatientSize() { return patients.size(); }
+    public Patient getPatient(int index) { return patients.get(index); }
+    public void addPatient(Patient item) { if (item != null) patients.add(item); }
+
+    public String getPracticeName() { return practiceName; }
+    public void setPracticeName(String practiceName) { this.practiceName = practiceName; }
+
+    @Override
+    public String toString() {
+        String nl = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder();
+        sb.append(practiceName).append(nl).append(getPhysicianSize()).append(nl);
+        for (int i = 0; i < getPhysicianSize(); i++) sb.append(getPhysician(i)).append(nl);
+        
+        sb.append(getPatientSize()).append(nl);
+        for (int i = 0; i < getPatientSize(); i++) {
+            Patient p = getPatient(i);
+            if (p != null) {
+                // Fix: Manually rebuilding the format to include "Appt for Patient"
+                sb.append(p.getPatientID()).append(nl);
+                sb.append(p.getFirstName()).append(nl);
+                sb.append(p.getLastName()).append(nl);
+                sb.append(p.getGender()).append(nl);
+                sb.append(p.getDateOfBirth()).append(nl);
+                sb.append(p.getPrimaryPhysician()).append(nl);
+                sb.append(p.getAppointmentSize()).append(nl);
+                for (int j = 0; j < p.getAppointmentSize(); j++) {
+                    sb.append("Appt for Patient").append(nl); // The missing symmetry line!
+                    sb.append(p.getAppointment(j).toString()).append(nl);
+                }
+            }
+        }
+        return sb.toString();
+    }
+}
