@@ -1,0 +1,138 @@
+/*
+
+MAriyah Curb
+COMP 167
+02/27/2026
+ */
+
+import java.util.ArrayList;
+
+public class Patient {
+
+    private int patientID;
+    private String firstName;
+    private String lastName;
+    private char gender;
+    private String dateOfBirth;
+    private String primaryPhysician;
+    private ArrayList<Appointment> appointments; //makes a new array list called appointments since i keep forgetting
+
+    public Patient(){
+        this.patientID = 0;
+        this.firstName = null;
+        this.lastName = null;
+        this.gender = '\u0000';
+        this.dateOfBirth = null;
+        this.primaryPhysician = null;
+        this.appointments = new ArrayList<Appointment>();
+    }
+    //constructor with parameters
+    public Patient(int patientID, String firstName, String lastName, char gender, String dateOfBirth, String primaryPhysician){
+        this.patientID = patientID;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.primaryPhysician = primaryPhysician;
+        this.appointments = new ArrayList<Appointment>();
+
+    }
+
+    public void setPatientID(int patientID) {
+        this.patientID = patientID;
+    }
+
+    public int getPatientID() {
+        return patientID;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setGender(char gender) {
+        this.gender = gender;
+    }
+
+    public char getGender() {
+        return gender;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setPrimaryPhysician(String primaryPhysician) {
+        this.primaryPhysician = primaryPhysician;
+    }
+
+    public String getPrimaryPhysician() {
+        return primaryPhysician;
+    }
+
+    //do your arrayhandling for Appointment
+
+
+    // Returns the number of items in the ArrayList 
+    public int getAppointmentSize() {
+        return appointments.size();
+    }
+
+    // Gets the Appointment at the specific index 
+    public Appointment getAppointment(int index) {
+        return appointments.get(index);
+    }
+
+    // Stores the item at the specific location
+    public void setAppointment(int index, Appointment item) {
+        appointments.set(index, item);
+    }
+
+    // Appends the Appointment to the ArrayList 
+    public void addAppointment(Appointment item) {
+        appointments.add(item);
+    }
+
+    // Removes and returns the widget at location index 
+    public Appointment removeAppointment(int index) {
+        return appointments.remove(index);
+    }
+
+
+
+    public String toString() {
+        // automaticall do the new lines ig
+        String nextline = System.getProperty("line.separator");
+
+        //  new formated toString
+        String result = patientID + nextline + firstName + nextline + lastName + nextline +
+                gender + nextline + dateOfBirth + nextline + primaryPhysician + nextline;
+
+        //  Loop through the list and add each appointment's string
+        for (int i = 0; i < appointments.size(); i++) {
+            // This calls the Appointment.toString()
+            result += appointments.get(i).toString() + nextline;
+        }
+
+        return result;
+
+
+    }
+
+}
